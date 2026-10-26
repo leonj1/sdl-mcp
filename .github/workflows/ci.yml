@@ -18,7 +18,7 @@ jobs:
   tests:
     # No custom 'name' — GitHub auto-appends matrix values (e.g. "tests (ubuntu-latest)").
     # Using ${{ matrix.os }} in name shows the raw expression when the job is skipped.
-    runs-on: ${{ matrix.os }}
+    runs-on: "${{ (matrix.os) == 'ubuntu-latest' && fromJSON('[\"self-hosted\",\"linux\",\"x64\"]') || (matrix.os) == 'windows-latest' && fromJSON('[\"self-hosted\",\"windows\",\"x64\"]') || (matrix.os) }}"
     if: github.event_name != 'schedule'
     env:
       # Keep the general CI test matrix on the JS indexer path; native coverage
@@ -207,7 +207,7 @@ jobs:
           echo "This validates cross-platform behavior for all language adapters."
 
   benchmarks:
-    runs-on: ${{ matrix.os }}
+    runs-on: "${{ (matrix.os) == 'ubuntu-latest' && fromJSON('[\"self-hosted\",\"linux\",\"x64\"]') || (matrix.os) }}"
     if: github.event_name != 'schedule'
     strategy:
       fail-fast: false
@@ -355,7 +355,7 @@ jobs:
         run: node --experimental-strip-types scripts/check-benchmark-claims.ts --in .benchmark/matrix-smoke/aggregate.json --profile smoke
 
   native-build:
-    runs-on: ${{ matrix.os }}
+    runs-on: "${{ (matrix.os) == 'windows-latest' && fromJSON('[\"self-hosted\",\"windows\",\"x64\"]') || (matrix.os) == 'macos-latest' && fromJSON('[\"self-hosted\",\"macOS\",\"ARM64\"]') || (matrix.os) == 'ubuntu-latest' && fromJSON('[\"self-hosted\",\"linux\",\"x64\"]') || (matrix.os) }}"
     if: github.event_name != 'schedule'
     strategy:
       fail-fast: false
@@ -498,7 +498,7 @@ jobs:
 
   benchmark-matrix-nightly:
     name: Benchmark Matrix Nightly
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
 
     steps:
@@ -639,7 +639,7 @@ jobs:
     # Keep the job name static because skipped matrix jobs can surface the raw
     # `${{ matrix.* }}` expression in the Actions UI before matrix expansion.
     name: Sync Indexed Memory
-    runs-on: ${{ matrix.os }}
+    runs-on: "${{ (matrix.os) == 'ubuntu-latest' && fromJSON('[\"self-hosted\",\"linux\",\"x64\"]') || (matrix.os) == 'windows-latest' && fromJSON('[\"self-hosted\",\"windows\",\"x64\"]') || (matrix.os) }}"
     needs: [tests, native-build]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     strategy:
@@ -887,7 +887,7 @@ jobs:
 
   sync-validation:
     name: Validate Cross-Platform Sync
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     needs: sync-memory
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 

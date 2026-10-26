@@ -22,7 +22,7 @@ permissions:
 jobs:
   resolve-version:
     name: Resolve Release Version
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     outputs:
       version: ${{ steps.resolve.outputs.version }}
       npm_dist_tag: ${{ steps.resolve.outputs.npm_dist_tag }}
@@ -90,7 +90,7 @@ jobs:
 
   build-native:
     name: Build Native (${{ matrix.target }})
-    runs-on: ${{ matrix.os }}
+    runs-on: "${{ (matrix.os) == 'windows-latest' && fromJSON('[\"self-hosted\",\"windows\",\"x64\"]') || (matrix.os) == 'macos-latest' && fromJSON('[\"self-hosted\",\"macOS\",\"ARM64\"]') || (matrix.os) == 'ubuntu-latest' && fromJSON('[\"self-hosted\",\"linux\",\"x64\"]') || (matrix.os) }}"
     needs: resolve-version
     if: needs.resolve-version.outputs.should_publish == 'true'
     strategy:
@@ -168,7 +168,7 @@ jobs:
 
   verify-packed-install:
     name: Verify Packed Install (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
+    runs-on: "${{ (matrix.os) == 'ubuntu-latest' && fromJSON('[\"self-hosted\",\"linux\",\"x64\"]') || (matrix.os) == 'windows-latest' && fromJSON('[\"self-hosted\",\"windows\",\"x64\"]') || (matrix.os) }}"
     needs: resolve-version
     if: needs.resolve-version.outputs.should_publish == 'true'
     strategy:
@@ -230,7 +230,7 @@ jobs:
 
   publish:
     name: Publish npm Packages
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     needs:
       - resolve-version
       - build-native
